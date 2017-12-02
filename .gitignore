@@ -21,3 +21,6 @@ dump/*
 .idea
 *.iml
 .vscode/*
+
+# yarn log
+yarn-error.log
