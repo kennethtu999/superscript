@@ -57,6 +57,7 @@
     "ss-message": "^1.1.4",
     "ss-parser": "^1.0.3",
     "syllablistic": "^0.1.0",
+    "tar": "2.2.1",
     "wordpos": "^1.1.5"
   },
   "devDependencies": {
