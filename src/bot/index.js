@@ -11,6 +11,8 @@ import getReply from './getReply';
 import Importer from './db/import';
 import Logger from './logger';
 
+import ChtUtils from './chtutils';
+
 const debug = debuglog('SS:SuperScript');
 
 class SuperScript {
@@ -277,33 +279,41 @@ const defaultOptions = {
 const setup = function setup(options = {}, callback) {
   options = _.merge(defaultOptions, options);
 
-  // Uses schemas to create models for the db connection to use
-  factSystem.setupFactSystem(options.mongoURI, options.factSystem, (err, coreFactSystem) => {
-    if (err) {
-      return callback(err);
-    }
+  //Kenneth 載入注音檔,完成後再載入原系統
+  ChtUtils.loadPhonetic(options.phoneticPath, options.ignoreTone).then(function() {
 
-    const db = connect(options.mongoURI);
-    const logger = new Logger(options.logPath);
-    const coreChatSystem = chatSystem.setupChatSystem(db, coreFactSystem, logger);
+    // Uses schemas to create models for the db connection to use
+    factSystem.setupFactSystem(options.mongoURI, options.factSystem, (err, coreFactSystem) => {
 
-    const instance = new SuperScriptInstance(coreChatSystem, coreFactSystem, options);
+      if (err) {
+        return callback(err);
+      }
 
-    /**
-     *  When you want to use multitenancy, don't return a bot, but instead an instance that can
-     *  get bots in different tenancies. Then you can just do:
-     *
-     *  instance.getBot('myBot');
-     */
-    if (options.useMultitenancy) {
-      return callback(null, instance);
-    }
+      const db = connect(options.mongoURI);
+      const logger = new Logger(options.logPath);
+      const coreChatSystem = chatSystem.setupChatSystem(db, coreFactSystem, logger);
 
-    const bot = instance.getBot('master');
-    if (options.importFile) {
-      return bot.importFile(options.importFile, err => callback(err, bot));
-    }
-    return callback(null, bot);
+      const instance = new SuperScriptInstance(coreChatSystem, coreFactSystem, options);
+
+      /**
+       *  When you want to use multitenancy, don't return a bot, but instead an instance that can
+       *  get bots in different tenancies. Then you can just do:
+       *
+       *  instance.getBot('myBot');
+       */
+      if (options.useMultitenancy) {
+        return callback(null, instance);
+      }
+
+      const bot = instance.getBot('master');
+      if (options.importFile) {
+        return bot.importFile(options.importFile, err => callback(err, bot));
+      }
+      return callback(null, bot);
+    });
+  }).catch(function(err) {
+    debug.info(`load phonetic data failed path:[${options.phoneticPath}] isIgnorePhonetic:[${options.ignoreTone}]`);
+    return callback(err);
   });
 };
 

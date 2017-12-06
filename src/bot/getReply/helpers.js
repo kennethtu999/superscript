@@ -5,6 +5,8 @@ import safeEval from 'safe-eval';
 import postParse from '../postParse';
 import Utils from '../utils';
 
+import ChtUtils from '../chtutils';
+
 const debug = debuglog('SS:Helpers');
 
 // This will find all the gambits to process by parent (topic or conversation)
@@ -94,8 +96,8 @@ export const doesMatch = async function doesMatch(gambit, message, options) {
 
   const pattern = new RegExp(`^${regexp}$`, 'i');
 
-  debug.verbose(`Try to match (clean)'${message.clean}' against '${gambit.trigger}' (${pattern})`);
-  debug.verbose(`Try to match (lemma)'${message.lemString}' against '${gambit.trigger}' (${pattern})`);
+  debug.info(`Try to match (clean)'${message.clean}' against '${gambit.trigger}' (${pattern})`);
+  debug.info(`Try to match (lemma)'${message.lemString}' against '${gambit.trigger}' (${pattern})`);
 
   // Match on isQuestion
   if (gambit.isQuestion && message.isQuestion) {
@@ -105,13 +107,36 @@ export const doesMatch = async function doesMatch(gambit, message, options) {
       match = message.lemString.match(pattern);
     }
   } else if (!gambit.isQuestion) {
+    //Kenneth 以下是一般比對方式
     match = message.clean.match(pattern);
     if (!match) {
       match = (" " + message.lemString + " ").match(pattern);
-      if (!match) {
-        match = message.lemString.match(pattern);
-      }
     }
+    if (!match) {
+      match = message.lemString.match(pattern);
+    }
+
+    //以下是注音比對方式
+    if (!match) {
+      const regexpPhonetic = ChtUtils.toPhonetic(regexp);
+      const pattern2 = new RegExp(`^${regexpPhonetic}$`, 'i');
+
+      const pclean = ChtUtils.toPhonetic(message.clean);
+      const plem = ChtUtils.toPhonetic(message.lemString);
+
+      debug.info(`Try to match (clean)'${pclean}' against '${gambit.trigger}' (${pattern2})`);
+      debug.info(`Try to match (lemma)'${plem}' against '${gambit.trigger}' (${pattern2})`);
+
+      match = pclean.match(pattern2);
+      if (!match) {
+        match = (" " + plem + " ").match(pattern2);
+      }
+      if (!match) {
+        match = plem.match(pattern2);
+      }
+
+    }
+
   }
 
   debug.verbose(`Match at the end of doesMatch was: ${match}`);
