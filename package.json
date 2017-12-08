@@ -58,7 +58,8 @@
     "ss-parser": "^1.0.3",
     "syllablistic": "^0.1.0",
     "tar": "2.2.1",
-    "wordpos": "^1.1.5"
+    "wordpos": "^1.1.5",
+    "xlsx": "^0.11.12"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
