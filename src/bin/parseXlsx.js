@@ -173,7 +173,7 @@ const processTestCase = function(worksheet, dataSet, index) {
 
     caseData.push({
       type : worksheet["A"+index].v == "輸入" ? "input" : "reply",
-      message : worksheet["B"+index].v
+      message : "" + worksheet["B"+index].v
     });
     index++;
   }

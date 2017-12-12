@@ -128,7 +128,12 @@ class SuperScript {
       };
 
       Message.createMessage(messageString, messageOptions, (err, messageObject) => {
+        debug.verbose("message in: " + JSON.stringify(messageObject.cnlp))
+        //debug.verbose(messageObject);
+
         processHelpers.getTopic(system.chatSystem, system.topicName).then((topicData) => {
+          debug.verbose("topic in: ");
+          debug.verbose(topicData);
           const options = {
             user,
             system,
