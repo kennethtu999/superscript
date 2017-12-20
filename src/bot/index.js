@@ -287,7 +287,7 @@ const setup = function setup(options = {}, callback) {
   //Kenneth 載入注音檔,完成後再載入原系統
   ChtUtils.loadPhonetic(options.phoneticPath, options.ignoreTone).then(function() {
     ChtUtils.toPhonetic("初始化");
-    debug.info("complete cht init");
+    debug.info("complete cht init: 初始化=", ChtUtils.toPhonetic("初始化"));
 
     // Uses schemas to create models for the db connection to use
     factSystem.setupFactSystem(options.mongoURI, options.factSystem, (err, coreFactSystem) => {
