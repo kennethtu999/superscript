@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import debuglog from 'debug-levels';
 import natural from 'natural';
+import ChtUtils from '../chtutils';
 
 import helpers from './helpers';
 
@@ -13,7 +14,9 @@ natural.PorterStemmer.attach();
 // Function to score the topics by TF-IDF
 const scoreTopics = function scoreTopics(message, tfidf) {
   let topics = [];
-  const tasMessage = message.lemString.tokenizeAndStem();
+  //不支援中文，所以只有先做斷字並轉換成注音
+  //const tasMessage = message.lemString.tokenizeAndStem();
+  const tasMessage = ChtUtils.toPhonetic(message.lemString);
   debug.verbose('Tokenised and stemmed words: ', tasMessage);
 
   // Score the input against the topic keywords to come up with a topic order.
@@ -38,6 +41,7 @@ const removeMissingTopics = function removeMissingTopics(topics) {
 };
 
 const findConversationTopics = async function findConversationTopics(pendingTopics, user, chatSystem, conversationTimeout) {
+  debug.info("findConversationTopics: " + user.history.length)
   if (user.history.length === 0) {
     return pendingTopics;
   }
@@ -93,7 +97,11 @@ export const findPendingTopicsForUser = async function findPendingTopicsForUser(
   allTopics.forEach((topic) => {
     const keywords = topic.keywords.join(' ');
     if (keywords) {
-      tfidf.addDocument(keywords.tokenizeAndStem(), topic.name);
+      //不支援中文，所以只有先做斷字
+      //tfidf.addDocument(keywords.tokenizeAndStem(), topic.name)
+      const chtKeywords = ChtUtils.toPhonetic(keywords);
+      debug.verbose(topic.name, 'chtKeywords: ', chtKeywords);
+      tfidf.addDocument(chtKeywords, topic.name);
     }
   });
 

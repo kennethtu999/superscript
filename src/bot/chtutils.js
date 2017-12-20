@@ -27,21 +27,19 @@ const loadPhonetic = function loadPhonetic(filepath, ignoreTone2) {
 //中文轉注音
 const toPhonetic = function toPhonetic(strs) {
 
-  debug.info("toPhonetic test data 4E43: " + phonetic["4E43"]);
   const rtnAry = [];
   for(var i = 0 ; i < strs.length; i++ ) {
     var str = strs.substring(i,i+1);
     if (str.charCodeAt(0) > 255) {
-      const unicode = str.charCodeAt(0).toString(16).toUpperCase();
-      while (unicode.length < 4) {
-        unicode = '0' + unicode;
-      }
-
-      if (phonetic.hasOwnProperty(unicode)) {
+      // const unicode = str.charCodeAt(0).toString(16).toUpperCase();
+      // while (unicode.length < 4) {
+      //   unicode = '0' + unicode;
+      // }
+      if (phonetic.hasOwnProperty(str)) {
         if (ignoreTone) {
-            rtnAry.push("9"+phonetic[unicode][0][0].substring(1));
+            rtnAry.push("9"+phonetic[str].substring(1));
         } else {
-            rtnAry.push(phonetic[unicode][0][0]);
+            rtnAry.push(phonetic[str]);
         }
       } else {
         rtnAry.push(str);
