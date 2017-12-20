@@ -66,7 +66,7 @@ const findMatches = async function findMatches(pendingTopics, messageObject, opt
     // Remove the empty topics, and flatten the array down.
     unfilteredMatches = _.flatten(_.filter(unfilteredMatches, n => n));
 
-    debug.info('Matching unfiltered gambits are: ');
+    debug.info('Matching unfiltered gambits are: ',topic);
     unfilteredMatches.forEach((match) => {
       debug.info(`Trigger: ${match.gambit.input}`);
       debug.info(`Replies: ${match.gambit.replies.map(reply => reply.reply).join('\n')}`);
@@ -78,6 +78,10 @@ const findMatches = async function findMatches(pendingTopics, messageObject, opt
 
       if (!_.isEmpty(reply)) {
         replies.push(reply);
+
+        //Kenneth 20171215 由於交易型Chatbot有Match都應該在指定的Gambit下回覆，不應該再由其它的Gambit回覆
+        reply.continueMatching = false;
+
         if (reply.continueMatching === false) {
           debug.info('Continue matching is set to false: returning.');
           stopSearching = true;
@@ -220,7 +224,13 @@ const matchItorHandle = async function matchItorHandle(match, message, options) 
 
   // If we have an item lets use it, otherwise retutn null and keep matching.
   debug.verbose('Picked', picked);
-  return picked ? processReplyTags(picked, options) : null;
+
+  if (topic.extension &&  topic.extension.entity) {
+    picked.txnEntity = topic.extension.entity;
+  }
+
+  var a =picked ? processReplyTags(picked, options) : null;
+  return a
 };
 
 const afterHandle = function afterHandle(matches) {

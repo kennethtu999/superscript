@@ -11,13 +11,17 @@ const customFunction = async function customFunction(functionName, functionArgs,
   scope.message = options.message;
   scope.user = options.user;
 
+  //Used by Transaction
+  scope.topicName = replyObj.topic;
+  scope.txnEntity = replyObj.txnEntity;
+
   if (!plugins[functionName]) {
     // If a function is missing, we kill the line and return empty handed
     throw new Error(`WARNING: Custom function (${functionName}) was not found. Your script may not behave as expected.`);
   }
 
   return new Promise((resolve, reject) => {
-    functionArgs.push((err, functionResponse, stopMatching) => {
+    functionArgs.push((err, functionResponse, stopMatching, clearConversation) => {
       let reply = '';
       const props = {};
       if (err) {
@@ -45,6 +49,7 @@ const customFunction = async function customFunction(functionName, functionArgs,
         reply = functionResponse || '';
         if (stopMatching !== undefined) {
           replyObj.continueMatching = !stopMatching;
+          replyObj.clearConversation = clearConversation;
         }
       }
 

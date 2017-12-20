@@ -29,6 +29,8 @@ const createTopicModel = function createTopicModel(db) {
     reply_exhaustion: { type: String },
 
     gambits: [{ type: String, ref: modelNames.gambit }],
+
+    extension: { entity : {type: Array}},
   });
 
   // This will create the Gambit and add it to the model

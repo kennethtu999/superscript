@@ -110,6 +110,7 @@ const importData = function importData(chatSystem, data, callback) {
       filter: topic.filter,
       reply_order: topic.flags.order || null,
       reply_exhaustion: topic.flags.keep || null,
+      extension: topic.extension || null,
     };
 
     debug.verbose('Creating Topic w/ Settings', topicProperties);
