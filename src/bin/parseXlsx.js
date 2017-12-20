@@ -4,6 +4,7 @@ import program from 'commander';
 import fs from 'fs';
 import XLSX from 'xlsx';
 
+
 const _ = require('lodash');
 
 program
@@ -94,7 +95,7 @@ const isEmpty = function(worksheet, pos) {
 /**
  * 匯入對話參數
  **/
-const paramMapping = {"交易代號" : "txn" , "主題標籤" : "tag"};
+const paramMapping = {"交易代號" : "txn" , "主題標籤" : "tag", "交易類型" : "txnType", "交易名稱" : "txnName"};
 const processParameter = function(worksheet, dataSet, index) {
   dataSet.param = {};
   while(true) {
@@ -123,10 +124,10 @@ const processDialog = function(worksheet, dataSet, index) {
       dataSet.dialog.firstChat.push(worksheet["D"+index].v );
       index++;
 
-    } while(isEmpty(worksheet, "A"+index));
+    } while(isEmpty(worksheet, "A"+index) && !isEmpty(worksheet, "D"+index));
   }
 
-  if (worksheet["A"+index].v == "交易個體") {
+  if (!isEmpty(worksheet, "A"+index) && worksheet["A"+index].v == "交易個體") {
 
     dataSet.dialog.entity=[];
     do {
@@ -144,13 +145,24 @@ const processDialog = function(worksheet, dataSet, index) {
     } while(isEmpty(worksheet, "A"+index));
   }
 
-  if (worksheet["A"+index].v == "執行前確認") {
+  if (worksheet.hasOwnProperty("A"+index) && worksheet["A"+index].v == "執行前確認") {
     dataSet.dialog.txnConfirm=[];
     do {
       var boo = isEmpty(worksheet, "A"+index);
       console.log(`執行前確認 index:${index}   isEmpty  ${boo}`);
 
       dataSet.dialog.txnConfirm.push(worksheet["D"+index].v );
+      index++;
+    } while(isEmpty(worksheet, "A"+index) && !isEmpty(worksheet, "D"+index));
+  }
+
+  if (worksheet.hasOwnProperty("A"+index) && worksheet["A"+index].v == "執行") {
+    dataSet.dialog.txnExec=[];
+    do {
+      var boo = isEmpty(worksheet, "A"+index);
+      console.log(`執行 index:${index}   isEmpty  ${boo}`);
+
+      dataSet.dialog.txnExec.push(worksheet["D"+index].v );
       index++;
     } while(isEmpty(worksheet, "A"+index) && !isEmpty(worksheet, "D"+index));
   }

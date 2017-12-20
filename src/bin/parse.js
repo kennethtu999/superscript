@@ -15,6 +15,7 @@ program
   .option('--port [type]', 'Mongo Port', '27017')
   .option('--mongo [type]', 'Mongo Database Name', 'superscriptParse')
   .option('--mongoURI [type]', 'Mongo URI')
+  .option('--xlsxPath [type]', 'Input XLSX path', './xlsx.json')
   .parse(process.argv);
 
 const mongoURI = process.env.MONGO_URI
@@ -29,10 +30,33 @@ fs.exists(program.output, (exists) => {
   }
 
   return facts.load(mongoURI, program.facts, true, (err, factSystem) => {
-    parser.parseDirectory(program.path, { factSystem }, (err, result) => {
+    if (exists && !program.force) {
+      console.log('File', program.output, 'already exists, remove file first or use -f to force save.');
+      return process.exit();
+    }
+
+
+    //取得Excel中定義的entity資訊，並寫入Topic中
+    var extensionData = {};
+
+
+    parser.parseDirectory(program.path, { factSystem , extensionData}, (err, result) => {
       if (err) {
         console.error(`Error parsing bot script: ${err}`);
       }
+
+      if (fs.existsSync(program.xlsxPath)) {
+        const xlsxJSON = JSON.parse(fs.readFileSync(program.xlsxPath, 'utf8'));
+        xlsxJSON.forEach(topic => {
+          if (result.topics.hasOwnProperty(topic.param.txn)) {
+            result.topics[topic.param.txn]["extension"] = {
+              "entity" : topic.dialog.entity
+            }
+          }
+        })
+      }
+
+
       fs.writeFile(program.output, JSON.stringify(result, null, 4), (err) => {
         if (err) throw err;
         console.log(`Saved output to ${program.output}`);
