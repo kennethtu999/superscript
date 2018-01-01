@@ -71,7 +71,7 @@ const processTopic = function(topic, ary) {
 
     //找出cap所有位置，並針對為entity變數的地方做取代
     expr = expr.replace(re, function(match) {
-      console.log("matched str: " + match);
+      //console.log("matched str: " + match);
       matchTimes++;
       if (match.match(/^\*~9|\[.*\]$/) ) {
         return match;
@@ -102,7 +102,7 @@ const processInnerTopic = function(topic, ary) {
   console.log("產生各Entity對話");
   ary.push(`> topic ${topic.param.txn}_internal( none ) {keep,system}\n`);
   ary.push("\n");
-  ary.push(`  + {ordered} __補足參數\n`);
+  ary.push(`  + {ordered} __${topic.param.txn}補足參數\n`);
 
   //如果沒有entity就先設定為空
   if (!topic.dialog.hasOwnProperty("entity"))

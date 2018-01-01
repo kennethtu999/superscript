@@ -65,20 +65,30 @@ const processXlsx = function(filePath,options) {
     console.log(`MaxRow: ${maxRow}`);
 
     var dataSet = {};
-    for (var i = 1 ; i<=maxRow ; i++) {
-      if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "參數") {
-        i = processParameter(worksheet, dataSet, i+2);
-      }
 
-      if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "對話內容") {
-        i = processDialog(worksheet, dataSet, i+2);
-      }
+    if (!isEmpty(worksheet, "A1") && worksheet["A1"].v == "版本" && !isEmpty(worksheet, "B1")) {
+      processVersion(worksheet, dataSet, 1);
 
-      if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "驗證內容") {
-        i = processTestCase(worksheet, dataSet, i+2);
+      for (var i = 2 ; i<=maxRow ; i++) {
+
+        if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "參數") {
+          i = processParameter(worksheet, dataSet, i+2);
+        }
+
+        if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "對話內容") {
+          i = processDialog(worksheet, dataSet, i+2);
+        }
+
+        if (!isEmpty(worksheet, "A"+i) && worksheet["A"+i].v == "驗證內容") {
+          i = processTestCase(worksheet, dataSet, i+2);
+        }
       }
+      dialogs.push(dataSet);
+    } else {
+      console.log('沒有定義設定資料版本，不處理')
     }
-    dialogs.push(dataSet);
+
+
   })
   return dialogs;
 }
@@ -91,6 +101,16 @@ const isEmpty = function(worksheet, pos) {
   return !worksheet.hasOwnProperty(pos) || /^\s*$/.test(worksheet[pos].v);
 }
 
+/**
+ * 定義檔版本
+ **/
+const processVersion = function(worksheet, dataSet, index) {
+  if (!isEmpty(worksheet, "B"+index)) {
+    var value = worksheet["B"+index].v;
+    dataSet.definitionVer = ""+value;
+  }
+  return index+1;
+}
 
 /**
  * 匯入對話參數
@@ -134,6 +154,12 @@ const processDialog = function(worksheet, dataSet, index) {
       var boo = isEmpty(worksheet, "A"+index);
       console.log(`交易個體 index:${index}   isEmpty  ${boo}`);
 
+      if (isEmpty(worksheet, "B"+index)) {
+        index++;
+        continue;
+        //如果沒有Entity Name就不要做該筆的處理
+      }
+
       var entity = {
         "key":worksheet["B"+index].v,
         "desc":worksheet["C"+index].v,
@@ -156,6 +182,7 @@ const processDialog = function(worksheet, dataSet, index) {
     } while(isEmpty(worksheet, "A"+index) && !isEmpty(worksheet, "D"+index));
   }
 
+  console.log("執行 " + index);
   if (worksheet.hasOwnProperty("A"+index) && worksheet["A"+index].v == "執行") {
     dataSet.dialog.txnExec=[];
     do {
